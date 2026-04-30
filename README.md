@@ -13,7 +13,7 @@ Cars are arranged on a circular track. Each car is an autonomous agent that, on 
 
 With enough cars and a stiff-enough braking response, those small local perturbations propagate backward around the loop and produce the characteristic phantom jam — no accident, no bottleneck, just emergent behaviour from the local rules.
 
-The simulation renders live: a matplotlib window shows the ring of cars moving around a circle, updated each tick.
+The simulation renders live: a matplotlib window shows the ring of cars moving around a circle, updated each tick. It can also run a small parameter sweep over maximum speed.
 
 ## Parameters
 
@@ -23,16 +23,15 @@ Tunable at the top of [main.py](main.py). All quantities are in SI units (metres
 | ----------------- | ------------------------------------------------------------------ | -------------------- |
 | `CARS_TOTAL`      | Number of vehicles on the ring                                     | 23                   |
 | `TRACK_LENGTH`    | Circumference of the ring (m)                                      | 230                  |
-| `MAX_SPEED`       | Free-flow cap (m/s); cars start at `MAX_SPEED / 2`                 | 30 km/h ≈ 8.33 m/s   |
-| `ACCELERATION`    | Acceleration toward `MAX_SPEED` (m/s²)                             | 1.0                  |
+| `DEFAULT_MAX_SPEED` | Default free-flow cap (m/s); cars start at `max_speed / 2`       | 30 km/h ≈ 8.33 m/s   |
+| `ACCELERATION`    | Acceleration toward `max_speed` (m/s²)                             | 1.0                  |
 | `SAFE_DISTANCE`   | Gap (m) below which a car brakes hard to `v = 0`                   | 2.5                  |
 | `SLOWDOWN_PROB`   | Per-second probability a car dawdles (scaled by `TIME_STEP`)       | 0.3                  |
 | `SLOWDOWN_AMOUNT` | Speed lost on one dawdle event (m/s)                               | 1.0                  |
-| `TIME_STEP`       | Integration step (s) — all rates are independent of this           | 0.01                 |
+| `TIME_STEP`       | Integration step (s); animation draws one frame per step           | 0.1                  |
 | `SIM_DURATION`    | Total simulated time (s); `TICKS = SIM_DURATION / TIME_STEP`       | 300                  |
 | `RNG_SEED`        | Seed for the stochastic slowdowns — same seed = reproducible run   | 42                   |
-| `RENDER_EVERY`    | Redraw only every Nth tick (decouples playback speed from physics) | 10                   |
-| `PAUSE`           | `plt.pause` between rendered frames (s)                            | 0.001                |
+| `PAUSE`           | `plt.pause` between rendered frames (s)                            | 0.005                |
 
 ## Running it
 
@@ -44,6 +43,29 @@ uv run main.py
 ```
 
 A matplotlib window opens with the live ring. Within ~30 s of simulated time you should see jam clusters nucleate and drift *backward* around the ring while every car continues to move forward — the signature of a phantom jam.
+
+To run the animation with a different maximum speed, pass one value in m/s:
+
+```bash
+uv run main.py --max-speed 6
+```
+
+To sweep several maximum speeds, pass a list:
+
+```bash
+uv run main.py --max-speed 5 8.33 12
+```
+
+The sweep prints a table and saves the data as a timestamped CSV:
+
+```text
+   max_speed_m_per_s  average_speed_m_per_s
+0               5.00                   3.80
+1               8.33                   3.92
+2              12.00                   3.77
+```
+
+The CSV filename is `max-speed-sweep-YYYY-MM-DD_HH-MM-SS.csv`.
 
 ## Background
 
